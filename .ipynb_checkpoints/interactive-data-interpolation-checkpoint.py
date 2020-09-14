@@ -6,8 +6,6 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 import plotly.express as px
 
-import numpy as np
-
 # pandas dataframes for data structures and storing csv data
 import pandas as pd
 
@@ -19,13 +17,9 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 df = pd.read_csv('https://plotly.github.io/datasets/country_indicators.csv')
 
-# add 'select' column
-df_row_num = len(df.index)
-select_col = pd.DataFrame([False]*df_row_num)
-
 available_indicators = df['Indicator Name'].unique()
 
-# establish html for dash app
+# establish html format for dash app
 app.layout = html.Div([
     html.Div([
 
@@ -58,22 +52,6 @@ app.layout = html.Div([
             )
         ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     ]),
-    # custom interpolation type checklist, will add on options as this grows
-    html.Div([
-        html.H3(children='Interpolation Type'),
-        dcc.Checklist(
-                id='inter-checklist',
-                options=[{'label': i, 'value': i} for i in ['Linear', 'Cubic Polynomial','Spline']],
-                labelStyle={'display': 'inline-block'}
-        ),
-        """
-        # This input will be for selecting the degree of polynomial data interpolation
-        dcc.Input(id='input_range',type='number',placeholder='number')
-        
-        """
-    ])
-
-    ,
 
     dcc.Graph(id='indicator-graphic'),
 
@@ -93,11 +71,10 @@ app.layout = html.Div([
      Input('yaxis-column', 'value'),
      Input('xaxis-type', 'value'),
      Input('yaxis-type', 'value'),
-     Input('year--slider', 'value'),
-     Input('inter-checklist', 'value')])
+     Input('year--slider', 'value')])
 def update_graph(xaxis_column_name, yaxis_column_name,
                  xaxis_type, yaxis_type,
-                 year_value, inter_checklist_value):
+                 year_value):
     dff = df[df['Year'] == year_value]
 
     fig = px.scatter(x=dff[dff['Indicator Name'] == xaxis_column_name]['Value'],
@@ -112,19 +89,8 @@ def update_graph(xaxis_column_name, yaxis_column_name,
     fig.update_yaxes(title=yaxis_column_name,
                      type='linear' if yaxis_type == 'Linear' else 'log')
 
-
-
     return fig
-
-# custom interpolation function
-
-
-#test interpolation
-
 
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-
-
-
